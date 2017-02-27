@@ -4,6 +4,7 @@ library(lubridate)
 library(tidyr)
 
 newdata <- read.csv("C:/Users/StevensLy/Documents/Database/Data/newdata240217_Lydia.csv",stringsAsFactors = F)
+head(newdata)
 
 #remove unessary columns
 head(newdata)
@@ -53,8 +54,14 @@ newdata$YEAR <- NULL
 newdata$YEAR_M <- NULL
 head(newdata)
 
+#change lowercase to uppercase in colunmn "SEASONS"
+newdata$SEASON <- toupper(newdata$SEASON)
+View(newdata)
 
-
+#merge existing trait data with newdata
+traitdata <- read.csv("C:/Users/StevensLy/Desktop/MPA Framework/traitinformation.csv",stringsAsFactors = F)
+newdata2 <- merge(newdata, traitdata)
+View(newdata2)
 
 #sort species based on how often they were captured
 head(table(newdata$species))
