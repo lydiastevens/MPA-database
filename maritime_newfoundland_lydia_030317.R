@@ -14,7 +14,7 @@ View(newdata4)
 table(newdata4$Invertebrate==1) #65798 OCCASIONS WITH INVERTEBRATES
 table(newdata4$Invertebrate==0) #405960 OCCASIONS WITH VETEBRATES
 table(is.na(newdata4$Invertebrate)) #25627 OCCASIONS WITH NA (OCCASIONS WHERE PLANTS WERE FOUND OR SPECIFIC SPECIES COULD NOT BE IDENTIFIED)
-
+table(newdata4$species)
 
 #rows that have "Regions" == NA
 #newdata4[c(3021,53285,54393,78940,86230,87032,110857,200042,292270,301313,350307,350308),]
@@ -53,6 +53,8 @@ for (i in unique(newdata4$REGION)[!is.na(unique(newdata4$REGION))]){
 
 fulldata <- fulldata[order(fulldata$Region,fulldata$year,fulldata$freq_stand),]
 View(fulldata)
+
+
 
 
 #Create a dummy plot related to a specific year
@@ -135,12 +137,44 @@ plot2010M<-ggplot(plotdata2010)+
 grid.arrange(plot2010M,plot2010N)
 
 
+###Determining which species were captured more than 1% of the time in 
+###trawl sets for each region
+
+##MARITIME##
+#combining region, date, lat, long into a tag
 newdata4$tag <- paste(newdata4$REGION,paste(newdata4$year_final,newdata4$month_final,newdata4$day_final,sep="-"),
                       newdata4$SLONG,newdata4$SLAT,sep="_")
+#filter dataset by anything after 2005 (last decade) and Maritime region
+subdata <- filter(newdata4,year_final>2005,REGION=="MARITIME")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+#118 species
+goodspecies <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("SLONG","SLAT","year_final")]
 
-subdata <- filter(newdata4,year_final>2000,REGION=="MARITIME")
 
-length(unique(subdata$tag))
+##NEWFOUNDLAND##
+newdata4$tag <- paste(newdata4$REGION,paste(newdata4$year_final,newdata4$month_final,newdata4$day_final,sep="-"),
+                      newdata4$SLONG,newdata4$SLAT,sep="_")
+#filter dataset by anything after 2005 (last decade) and Newfoundland region
+subdata <- filter(newdata4,year_final>2005,REGION=="NEWFOUNDLAND")
+#what is 1% of the unique species
+Precent_1_stations_Newfoundland <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+#118 species
+goodspecies_Newfoundland <- names(which(table(subdata$species)>Precent_1_stations_Newfoundland))
+pointdata_Newfoundland <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations_Newfoundland)),c("SLONG","SLAT","year_final")]
+
+#list of maritime species
+goodspecies
+#list of newfoundland species
+goodspecies_Newfoundland
+
+##Combining species from each regions
+listone2 <- unique(c(goodspecies, goodspecies_Newfoundland))
+setdiff(goodspecies_Newfoundland, goodspecies)
+
 
 
 
