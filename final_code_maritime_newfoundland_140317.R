@@ -1222,7 +1222,7 @@ library(gridExtra)
 # SpeciesList <- unique(MNData$fishbase)
 # #Run from when there is a species with an error rather than start fro beginning
 # #outlist <- lapply(SpeciesList[which(SpeciesList=="STERNOPTYCHIDAE"):length(SpeciesList)],FUN=Classify)
-# #run from beginning
+# #run from beginning (this takes a while!!!)
 # outlist <- lapply((SpeciesList), FUN=Classify)
 # taxInfo <- do.call("rbind", outlist)
 # 
@@ -1388,7 +1388,8 @@ library(gridExtra)
 # write.csv(reproductioninfo, file='C:/Users/StevensLy/Documents/Database/Data/reproductioninfo.csv')
 # write.csv(popinfo, file='C:/Users/StevensLy/Documents/Database/Data/popinfo.csv')
 
-newdata4 <- read.csv("C:/Users/StevensLy/Documents/Database/Data/newdata020317_Lydia.csv",stringsAsFactors = F)
+newdata4 <- read.csv("C:/Users/StevensLy/Documents/Database/Data/newdata170317_Lydia3.csv",stringsAsFactors = F)
+
 head(newdata4)
 #View(newdata4)
 
@@ -1530,7 +1531,6 @@ subdata <- filter(newdata4,year_final>2005,REGION=="MARITIME")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
 #which species are found more than 1% of the time
-#118 species
 goodspecies <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("SLONG","SLAT","year_final")]
 
@@ -1543,7 +1543,6 @@ subdata2 <- filter(newdata4,year_final>2005,REGION=="NEWFOUNDLAND")
 #what is 1% of the unique species
 Precent_1_stations_Newfoundland <- floor(length(unique(subdata2$tag))*0.01)
 #which species are found more than 1% of the time
-#118 species
 goodspecies_Newfoundland <- names(which(table(subdata2$species)>Precent_1_stations_Newfoundland))
 pointdata_Newfoundland <- subdata[!subdata2$species%in%names(which(table(subdata2$species)>Precent_1_stations_Newfoundland)),c("SLONG","SLAT","year_final")]
 
@@ -1554,7 +1553,72 @@ goodspecies_Newfoundland
 
 ##Combining species from each regions
 listone2 <- unique(c(goodspecies, goodspecies_Newfoundland))
+#looking to see which species were captured in one region, but not the other
 setdiff(goodspecies_Newfoundland, goodspecies)
+setdiff(goodspecies, goodspecies_Newfoundland)
 
-table(subdata$species)
-table(subdata2$species)
+#sort and list species with the highest number of occasions
+occasiontable <- as.data.frame(sort(table(c(subdata$species, subdata2$species))),stringsAsFactors = F)
+colnames(occasiontable) <- c("species","count")
+
+occ <- occasiontable[occasiontable$species %in% listone2,]
+
+occasion_plot <- ggplot(occ, aes(x=reorder(species,-count),y=count))+
+  geom_bar(stat="identity")+
+  ylab("Count")+xlab("Species")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90))
+
+
+#plot species by count and region (this is overall count)
+
+#Maritime Region
+Msubdata <- as.data.frame(sort(table(subdata$species)),stringsAsFactors = F)
+colnames(Msubdata) <- c("species","count")
+
+occasion_plot_M <- ggplot(Msubdata, aes(x=reorder(species, -count), y=count))+
+  geom_bar(stat="identity")+
+  ylab("Count")+xlab("Species")+ggtitle("Maritime")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90))
+
+#Nefoundland Region
+NFsubdata <- as.data.frame(sort(table(subdata2$species)),stringsAsFactors = F)
+colnames(NFsubdata) <- c("species","count")
+
+#Newfoundland 
+occasion_plot_NL <- ggplot(NFsubdata, aes(x=reorder(species, -count), y=count))+
+    geom_bar(stat="identity")+
+    ylab("Count")+xlab("Species")+ggtitle("Newfoundland")+
+    theme_bw()+
+    theme(axis.text.x = element_text(angle = 90))
+
+
+
+countdata <- data.frame(species=NULL,count=NULL)
+for(i in listone2){
+  temp=data.frame(species=i,count=length(which(newdata4$species==i)),stringsAsFactors = F)
+  countdata <- rbind(countdata,temp)
+  print(i)
+}
+
+View(countdata)
+
+newdata4$count=99999
+for(i in listone2){
+  newdata4[which(newdata4$species==i),"count"]=length(which(newdata4$species==i))
+  print(i)
+}
+
+newdata4[newdata4$count == 99999,"count"]=NA
+
+
+##View count data and determine max and min occasions
+View(countdata)
+max(newdata4$count,na.rm=T)
+min(newdata4$count,na.rm=T)
+length(countdata)
+print(countdata)
+
+
+
