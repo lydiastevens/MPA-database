@@ -1568,6 +1568,7 @@ occasion_plot <- ggplot(occ, aes(x=reorder(species,-count),y=count))+
   ylab("Count")+xlab("Species")+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 90))
+occasion_plot
 
 
 #plot species by count and region (this is overall count)
