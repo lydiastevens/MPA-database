@@ -53,7 +53,7 @@ plot(MapDepths, deep=-10000,shallow=-10000, image = TRUE, land = TRUE, lwd = 0.1
 
 ### List rows that just go to Class
 
-subdata$classfilter=FALSE
+subdata$classfilter=FALSE #Nick wrote this
 
 subdata$temp <- rowSums(is.na(subdata[,c("order","family","genus")]))
 subdata[!is.na(subdata$class) & subdata$temp==3,"classfilter"]=TRUE
