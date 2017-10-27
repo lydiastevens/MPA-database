@@ -237,6 +237,8 @@ names(totalgulf3)
 # colnames(gulf)[97:99]<-c("STRONGYLOCENTROTUS SP.","CLYPEASTEROIDA O.","HOLOTHUROIDEA C.")
 # colnames(gulf)[100:103]<-c("ANTHOZOA C.","PENNATULACEA","SCYPHOZOA C.","PORIFERA P.")
 
+
+#######Combining datasets#######
 #used a function to keep matching columns from one dataset and keep non matching columns
 rbind.all.columns <- function(x, y) {
   x.diff <- setdiff(colnames(x), colnames(y))
@@ -317,4 +319,8 @@ names(trawldata)
 trawldata <- read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
 head(trawldata)
 
+##take allregions. pick our unique species.
+allregions[is.na(allregions$species) == FALSE,]
+test <- unique
 
+#change
