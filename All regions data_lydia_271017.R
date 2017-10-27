@@ -310,6 +310,9 @@ trawldata$newsciname <- NULL
 trawldata$fishbase <- NULL
 trawldata$collection <- NULL
 names(trawldata)
+head(trawldata)
 
 #this script contains only trawl data from all four regions
-write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/trawldata.csv')
+#write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/trawldata.csv')
+trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
+
