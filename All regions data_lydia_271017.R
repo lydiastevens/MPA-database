@@ -49,9 +49,7 @@ table(quebec$Latin.name)
 max(table(quebec$Latin.name)) #Gadus Morhua occurred the most frequently (2943 occasions)
 View(table(quebec$Latin.name))
 
-
-
-#Cleaning Dates
+#Cleaning Dates in quebec dataset
 Date<-as.POSIXct(quebec$Date, format="%Y-%m-%d", tz ="UTC")
 quebec$year_final <- year(Date)
 quebec$month_final <- month(Date)
@@ -75,6 +73,7 @@ unique(quebec$newsciname)
 quebec$newsciname <- gsub("ammodytes sp.","ammodytes",quebec$newsciname)
 SpeciesList <- unique(quebec$newsciname)
 
+#used an old function to expand species name into taxonomic groups 
 # source("C:/Users/StevensLy/Documents/Database/Code/MPA database/ClassifyFunction.R")
 # SpeciesList <- unique(quebec$newsciname)
 # outlist <- lapply(SpeciesList[which(SpeciesList==""):length(SpeciesList)],FUN=Classify)
@@ -190,6 +189,7 @@ totalgulf2$newsciname <- gsub("enchelyopus cimbrius","enchelyopus cimbrius",tota
 totalgulf2 <- totalgulf2[is.na(totalgulf2$newsciname) == FALSE,]
 SpeciesList <- unique(totalgulf2$newsciname)
 
+#used an old function to expand species name into taxonomic groups 
 # source("C:/Users/StevensLy/Documents/Database/Code/MPA database/ClassifyFunction.R")
 # SpeciesList <- unique(totalgulf2$newsciname)
 # outlist <- lapply(SpeciesList[which(SpeciesList=="gadus morhua"):length(SpeciesList)],FUN=Classify)
@@ -316,3 +316,22 @@ head(trawldata)
 #write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/trawldata.csv')
 trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
 
+
+#pick out unique species from each region and match to existing functional traits
+head(allregions)
+allregions$X <- NULL
+
+#creating a new database for functional traits only of unique species
+functionaltraits <-allregions[,c(18:24,52:134)] 
+unique(functionaltraits$species) 
+names(functionaltraits)
+
+
+result <- aggregate(phylum ~ species, data = functionaltraits, paste)
+
+
+
+
+for (i in unique(functionaltraits$species)){
+  
+}
