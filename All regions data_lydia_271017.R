@@ -399,8 +399,11 @@ complete
 df <- merge(complete,functionaltraits, by="species")
 head(df)
 head(unique(df$species))
-unique(df[df$species %in% complete$species,])
+dflong <- unique(df[df$species %in% complete$species,])
+head(dflong)
 
+dfwide <- dcast(dflong, species~region, value.var = "AphiaID_accepted")
+head(dfwide)
 
 #There are 110 unique species in each region more than 1% of the time (this does not include animals 
 #captured that only have taxonomic information higher than species level)
