@@ -296,6 +296,39 @@ head(allregions)
 names(allregions)
 allregions$X <- NULL
 
+#Set frequencies to have a range (1-0). Where the species with the highest capture percentage is 1 and the lowest is 0
+#This can level out if gear wasn't working and only one trawl survey was done catching a lot of fish versus many 
+#trawl surveys catching fewer fish (I think?)
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
+#Create dataframe. Fill it with nothing
+#Make for loop to filter by region and year and calculate frequency (percentage)
+freqinfo <- NULL #empty data
+for (i in unique(allregions$region)[!is.na(unique(allregions$region))]){
+  for (y in unique(allregions[!is.na(allregions$region) & allregions$region==i,"year_final"])){
+    
+    
+    temp <- dplyr::filter(allregions,region==i,year_final==y)
+    
+    freq_obs <- as.data.frame(table(temp$species)/nrow(temp))
+    colnames(freq_obs) <- c("species","frequency")
+    
+    freq_obs$region=i
+    freq_obs$year=y
+    
+    freq_obs$freq_stand <- range01(freq_obs$frequency)
+    
+    freqinfo <- rbind(freqinfo,freq_obs)
+    
+    
+  } #end of y 'year_final' loop
+  
+} #end of i 'REGION' loop
+
+freqinfo <- freqinfo[order(freqinfo$region,freqinfo$year,freqinfo$freq_stand),]
+View(freqinfo)
+
+
 ##make a dataset that just includes trawl information from all four regions
 trawldata <- allregions[, c(1:48)]
 names(trawldata)
@@ -349,8 +382,5 @@ functionaltraits <-allregions[,c(17:24,52:134)]
 unique(functionaltraits$species) 
 names(functionaltraits)
 
-df <- data.frame(unique(functionaltraits[,c(1:90)]))
 
-
-x <- length(unique(functionaltraits$species %in% functionaltraits))
 
