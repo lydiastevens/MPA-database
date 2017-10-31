@@ -263,8 +263,8 @@ names(maritimenewfoundland)
 
 View(maritimenewfoundland)
 View(gulfquebec)
-#write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/gulfquebec.csv')
-#write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/maritimenewfoundland.csv')
+#write.csv(gulfquebec, file='C:/Users/StevensLy/Documents/Database/Data/gulfquebec.csv')
+#write.csv(maritimenewfoundland, file='C:/Users/StevensLy/Documents/Database/Data/maritimenewfoundland.csv')
 
 #determining what species are found in gulf and quebec regions but not in maritime newfoundland
 setdiff(gulfquebec$species, maritimenewfoundland$species)
@@ -295,6 +295,9 @@ allregions <- rbind.all.columns(gulfquebec,maritimenewfoundland)
 head(allregions)
 names(allregions)
 allregions$X <- NULL
+##found misspelled species
+allregions$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",allregions$species)
+allregions$species <- gsub("Raja fyllae","Rajella fyllae",allregions$species)
 
 #Set frequencies to have a range (1-0). Where the species with the highest capture percentage is 1 and the lowest is 0
 #This can level out if gear wasn't working and only one trawl survey was done catching a lot of fish versus many 
@@ -328,7 +331,7 @@ for (i in unique(allregions$region)[!is.na(unique(allregions$region))]){
 freqinfo <- freqinfo[order(freqinfo$region,freqinfo$year,freqinfo$freq_stand),]
 View(freqinfo)
 
-###Determining which species were captured more than 1% of the time in 
+###Determining which species were captured more than 30% of the time in 
 ###trawl sets for each region
 
 ##MARITIME##
@@ -339,36 +342,36 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 subdata <- filter(allregions,year_final>2005,region=="MARITIME")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
-#which species are found more than 1% of the time
-goodspecies <- names(which(table(subdata$species)>Precent_1_stations))
-pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+#which species are found more than 30% of the time
+goodspecies_maritime <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata_maritime <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
-goodspecies
+goodspecies_maritime
 
 ##NEWFOUNDLAND##
 #combining region, date, lat, long into a tag
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
                         allregions$longitude,allregions$latitude,sep="_")
-#filter dataset by anything after 2005 (last decade) and Maritime region
+#filter dataset by anything after 2005 (last decade) and Newfoundland region
 subdata <- filter(allregions,year_final>2005,region=="NEWFOUNDLAND")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
-#which species are found more than 1% of the time
+#which species are found more than 30% of the time
 goodspecies_newfoundland <- names(which(table(subdata$species)>Precent_1_stations))
-pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+pointdata_newfoundland <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
 goodspecies_newfoundland
 
 ##GULF##
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
                         allregions$longitude,allregions$latitude,sep="_")
-#filter dataset by anything after 2005 (last decade) and Maritime region
+#filter dataset by anything after 2005 (last decade) and Gulf region
 subdata <- filter(allregions,year_final>2005,region=="GULF")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
-#which species are found more than 1% of the time
+#which species are found more than 30% of the time
 goodspecies_gulf <- names(which(table(subdata$species)>Precent_1_stations))
-pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+pointdata_gulf <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
 goodspecies_gulf
 
@@ -376,22 +379,44 @@ goodspecies_gulf
 ##QUEBEC##
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
                         allregions$longitude,allregions$latitude,sep="_")
-#filter dataset by anything after 2005 (last decade) and Maritime region
+#filter dataset by anything after 2005 (last decade) and Quebec Region
 subdata <- filter(allregions,year_final>2005,region=="QUEBEC")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
-#which species are found more than 1% of the time
+#which species are found more than 30% of the time
 goodspecies_quebec <- names(which(table(subdata$species)>Precent_1_stations))
-pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
 goodspecies_quebec
 
+##Finding differences between regions
+diffs
+View(allregions)
+complete <- data.frame(unique(c(goodspecies_maritime,goodspecies_newfoundland,goodspecies_gulf,goodspecies_quebec)))
+names(complete) <- paste("species")
+complete
+#merge complete with functional traits by species
+df <- merge(complete,functionaltraits, by="species")
+head(df)
+head(unique(df$species))
+unique(df[df$species %in% complete$species,])
+
+
+#There are 110 unique species in each region more than 1% of the time (this does not include animals 
+#captured that only have taxonomic information higher than species level)
+known <- unique(c(goodspecies_newfoundland, goodspecies_maritime))
+unknown <- unique(c(goodspecies_gulf, goodspecies_quebec))
+diff <- setdiff(unknown, known)
+diff
 
 
 
 
 
-
+functionaltraits <-allregions[,c(17:24,52:134)] 
+unique(functionaltraits$species) 
+names(functionaltraits)
+#write.csv(functionaltraits, file='C:/Users/StevensLy/Documents/Database/Data/functionaltraits.csv')
 
 
 
