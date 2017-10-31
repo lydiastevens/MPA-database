@@ -266,7 +266,7 @@ View(gulfquebec)
 #write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/gulfquebec.csv')
 #write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/maritimenewfoundland.csv')
 
-#determining what species are found in gulf and quebec regions, but not in maritime newfoundland
+#determining what species are found in gulf and quebec regions but not in maritime newfoundland
 setdiff(gulfquebec$species, maritimenewfoundland$species)
 #update species where there names have changed
 gulfquebec$species <- gsub("Urophycis chesteri","Phycis chesteri",gulfquebec$species)
@@ -327,6 +327,72 @@ for (i in unique(allregions$region)[!is.na(unique(allregions$region))]){
 
 freqinfo <- freqinfo[order(freqinfo$region,freqinfo$year,freqinfo$freq_stand),]
 View(freqinfo)
+
+###Determining which species were captured more than 1% of the time in 
+###trawl sets for each region
+
+##MARITIME##
+#combining region, date, lat, long into a tag
+allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
+                      allregions$longitude,allregions$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Maritime region
+subdata <- filter(allregions,year_final>2005,region=="MARITIME")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+goodspecies <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies
+
+##NEWFOUNDLAND##
+#combining region, date, lat, long into a tag
+allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
+                        allregions$longitude,allregions$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Maritime region
+subdata <- filter(allregions,year_final>2005,region=="NEWFOUNDLAND")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+goodspecies_newfoundland <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_newfoundland
+
+##GULF##
+allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
+                        allregions$longitude,allregions$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Maritime region
+subdata <- filter(allregions,year_final>2005,region=="GULF")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+goodspecies_gulf <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_gulf
+
+
+##QUEBEC##
+allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
+                        allregions$longitude,allregions$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Maritime region
+subdata <- filter(allregions,year_final>2005,region=="QUEBEC")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than 1% of the time
+goodspecies_quebec <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_quebec
+
+
+
+
+
+
+
+
 
 
 ##make a dataset that just includes trawl information from all four regions
