@@ -260,6 +260,27 @@ gulfquebec$Owner.Institution <- NULL
 names(gulfquebec)
 names(maritimenewfoundland)
 
+
+View(maritimenewfoundland)
+View(gulfquebec)
+#write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/gulfquebec.csv')
+#write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/maritimenewfoundland.csv')
+
+#determining what species are found in gulf and quebec regions, but not in maritime newfoundland
+setdiff(gulfquebec$species, maritimenewfoundland$species)
+#update species where there names have changed
+gulfquebec$species <- gsub("Urophycis chesteri","Phycis chesteri",gulfquebec$species)
+gulfquebec$species <- gsub("Lumpenus maculatus","Leptoclinus maculatus",gulfquebec$species)
+setdiff(gulfquebec$species, maritimenewfoundland$species)
+setdiff(gulfquebec$genus, maritimenewfoundland$genus)
+setdiff(gulfquebec$family, maritimenewfoundland$family)
+setdiff(gulfquebec$order, maritimenewfoundland$order)
+setdiff(gulfquebec$class, maritimenewfoundland$class)
+setdiff(gulfquebec$subphylum, maritimenewfoundland$subphylum)
+setdiff(gulfquebec$phylum, maritimenewfoundland$phylum)
+
+
+
 #making column names more consistent. Since other regions only species lat/long
 #take start lat/start long and name it to just be lat/long
 names(maritimenewfoundland)[15] <- paste("longitude")
@@ -273,6 +294,8 @@ names(maritimenewfoundland)[19] <- paste("depth")
 allregions <- rbind.all.columns(gulfquebec,maritimenewfoundland)
 head(allregions)
 names(allregions)
+allregions$X <- NULL
+
 ##make a dataset that just includes trawl information from all four regions
 trawldata <- allregions[, c(1:48)]
 names(trawldata)
@@ -319,19 +342,15 @@ trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",s
 
 #pick out unique species from each region and match to existing functional traits
 head(allregions)
-allregions$X <- NULL
+
 
 #creating a new database for functional traits only of unique species
-functionaltraits <-allregions[,c(18:24,52:134)] 
+functionaltraits <-allregions[,c(17:24,52:134)] 
 unique(functionaltraits$species) 
 names(functionaltraits)
 
-
-result <- aggregate(phylum ~ species, data = functionaltraits, paste)
-
+df <- data.frame(unique(functionaltraits[,c(1:90)]))
 
 
+x <- length(unique(functionaltraits$species %in% functionaltraits))
 
-for (i in unique(functionaltraits$species)){
-  
-}
