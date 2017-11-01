@@ -298,6 +298,10 @@ allregions$X <- NULL
 ##found misspelled species
 allregions$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",allregions$species)
 allregions$species <- gsub("Raja fyllae","Rajella fyllae",allregions$species)
+##fixing mistakes 
+allregions$class <- gsub("Teleostei","Actinopterygii",allregions$class)
+
+
 
 #Set frequencies to have a range (1-0). Where the species with the highest capture percentage is 1 and the lowest is 0
 #This can level out if gear wasn't working and only one trawl survey was done catching a lot of fish versus many 
@@ -389,6 +393,9 @@ pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$specie
 
 goodspecies_quebec
 
+
+
+
 ##Finding differences between regions
 diffs
 View(allregions)
@@ -396,14 +403,19 @@ complete <- data.frame(unique(c(goodspecies_maritime,goodspecies_newfoundland,go
 names(complete) <- paste("species")
 complete
 #merge complete with functional traits by species
+
+
 df <- merge(complete,functionaltraits, by="species")
 head(df)
 head(unique(df$species))
 dflong <- unique(df[df$species %in% complete$species,])
 head(dflong)
+names(dflong)
+dflong$region <- NULL
+dflong[!duplicated(dflong$species), ]
+write.csv(dflong, file='C:/Users/StevensLy/Documents/Database/Data/functionaltraits_011117.csv')
 
-dfwide <- dcast(dflong, species~region, value.var = "AphiaID_accepted")
-head(dfwide)
+
 
 #There are 110 unique species in each region more than 1% of the time (this does not include animals 
 #captured that only have taxonomic information higher than species level)
