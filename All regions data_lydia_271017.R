@@ -302,6 +302,11 @@ allregions$species <- gsub("Raja fyllae","Rajella fyllae",allregions$species)
 allregions$class <- gsub("Teleostei","Actinopterygii",allregions$class)
 
 
+#creating a new database for functional traits only of unique species. I thought this was
+#useful, but I don't think I need it.
+# functionaltraits <-allregions[,c(17:24,52:134)] 
+# unique(functionaltraits$species) 
+# names(functionaltraits)
 
 #Set frequencies to have a range (1-0). Where the species with the highest capture percentage is 1 and the lowest is 0
 #This can level out if gear wasn't working and only one trawl survey was done catching a lot of fish versus many 
@@ -394,45 +399,35 @@ pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$specie
 goodspecies_quebec
 
 
-
-
 ##Finding differences between regions
-diffs
+#There are 184 unique species in each region more than 1% of the time (this does not include animals 
+#captured that only have taxonomic information higher than species level)
+known <- unique(c(goodspecies_newfoundland, goodspecies_maritime))
+unknown <- unique(c(goodspecies_gulf, goodspecies_quebec))
+diff <- setdiff(known, unknown)
+diff
+
+
 View(allregions)
 complete <- data.frame(unique(c(goodspecies_maritime,goodspecies_newfoundland,goodspecies_gulf,goodspecies_quebec)))
 names(complete) <- paste("species")
 complete
+
 #merge complete with functional traits by species
-
-
 df <- merge(complete,functionaltraits, by="species")
 head(df)
 head(unique(df$species))
 dflong <- unique(df[df$species %in% complete$species,])
 head(dflong)
-names(dflong)
 dflong$region <- NULL
-dflong[!duplicated(dflong$species), ]
-write.csv(dflong, file='C:/Users/StevensLy/Documents/Database/Data/functionaltraits_011117.csv')
-
-
-
-#There are 110 unique species in each region more than 1% of the time (this does not include animals 
-#captured that only have taxonomic information higher than species level)
-known <- unique(c(goodspecies_newfoundland, goodspecies_maritime))
-unknown <- unique(c(goodspecies_gulf, goodspecies_quebec))
-diff <- setdiff(unknown, known)
-diff
-
-
-
-
-
-functionaltraits <-allregions[,c(17:24,52:134)] 
-unique(functionaltraits$species) 
-names(functionaltraits)
-#write.csv(functionaltraits, file='C:/Users/StevensLy/Documents/Database/Data/functionaltraits.csv')
-
+functionaldatabase <- dflong[!duplicated(dflong$species), ]
+#write.csv(functionaldatabase, file='C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv')
+#The functional database didn't have all of the information in it so I did some work in excel to complete
+#missing information. For example, most invertebrate species were excluded. 
+functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv",stringsAsFactors = F)
+head(functionaldatabase)
+names(functionaldatabase)
+View(functionaldatabase)
 
 
 ##make a dataset that just includes trawl information from all four regions
@@ -479,14 +474,10 @@ head(trawldata)
 trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
 
 
-#pick out unique species from each region and match to existing functional traits
-head(allregions)
 
 
-#creating a new database for functional traits only of unique species
-functionaltraits <-allregions[,c(17:24,52:134)] 
-unique(functionaltraits$species) 
-names(functionaltraits)
+
+
 
 
 
