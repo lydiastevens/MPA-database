@@ -295,12 +295,16 @@ allregions <- rbind.all.columns(gulfquebec,maritimenewfoundland)
 head(allregions)
 names(allregions)
 allregions$X <- NULL
-##found misspelled species
+##fixing mistakes
 allregions$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",allregions$species)
 allregions$species <- gsub("Raja fyllae","Rajella fyllae",allregions$species)
-##fixing mistakes 
+allregions$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",allregions$species)
+allregions$genus <- gsub("Ulcina","Aspidophoroides",allregions$genus)
+allregions$newsciname <- gsub("ulcina olrikii","aspidophoroides olrikii",allregions$newsciname)
 allregions$class <- gsub("Teleostei","Actinopterygii",allregions$class)
-
+allregions$species <- gsub("Gadus ogac","Gadus macrocephalus",allregions$species)
+allregions$newsciname <- gsub("gadus ogac","gadus macrocephalus",allregions$newsciname)
+View(allregions)
 
 #creating a new database for functional traits only of unique species. I thought this was
 #useful, but I don't think I need it.
@@ -413,6 +417,7 @@ complete <- data.frame(unique(c(goodspecies_maritime,goodspecies_newfoundland,go
 names(complete) <- paste("species")
 complete
 
+
 #merge complete with functional traits by species
 df <- merge(complete,functionaltraits, by="species")
 head(df)
@@ -421,14 +426,27 @@ dflong <- unique(df[df$species %in% complete$species,])
 head(dflong)
 dflong$region <- NULL
 functionaldatabase <- dflong[!duplicated(dflong$species), ]
+##read in functionaldatabase 
+functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv",stringsAsFactors = F)
+##fixing mistakes
+functionaldatabase$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",functionaldatabase$species)
+functionaldatabase$species <- gsub("Raja fyllae","Rajella fyllae",functionaldatabase$species)
+functionaldatabase$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",functionaldatabase$species)
+functionaldatabase$genus <- gsub("Ulcina","Aspidophoroides",functionaldatabase$genus)
+functionaldatabase$class <- gsub("Teleostei","Actinopterygii",functionaldatabase$class)
+functionaldatabase$species <- gsub("Gadus ogac","Gadus macrocephalus",functionaldatabase$species)
+
 #write.csv(functionaldatabase, file='C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv')
 #The functional database didn't have all of the information in it so I did some work in excel to complete
 #missing information. For example, most invertebrate species were excluded. 
-functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv",stringsAsFactors = F)
+
 head(functionaldatabase)
 names(functionaldatabase)
 View(functionaldatabase)
+functionaldatabase$species
 
+
+View(allregions)
 
 ##make a dataset that just includes trawl information from all four regions
 trawldata <- allregions[, c(1:48)]
@@ -472,7 +490,7 @@ head(trawldata)
 #this script contains only trawl data from all four regions
 #write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/trawldata.csv')
 trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
-
+View(trawldata)
 
 
 
