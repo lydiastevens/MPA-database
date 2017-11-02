@@ -435,18 +435,11 @@ functionaldatabase$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",fu
 functionaldatabase$genus <- gsub("Ulcina","Aspidophoroides",functionaldatabase$genus)
 functionaldatabase$class <- gsub("Teleostei","Actinopterygii",functionaldatabase$class)
 functionaldatabase$species <- gsub("Gadus ogac","Gadus macrocephalus",functionaldatabase$species)
-
 #write.csv(functionaldatabase, file='C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv')
 #The functional database didn't have all of the information in it so I did some work in excel to complete
 #missing information. For example, most invertebrate species were excluded. 
 
-head(functionaldatabase)
-names(functionaldatabase)
-View(functionaldatabase)
-functionaldatabase$species
 
-
-View(allregions)
 
 ##make a dataset that just includes trawl information from all four regions
 trawldata <- allregions[, c(1:48)]
@@ -484,17 +477,26 @@ trawldata$Date <- NULL
 trawldata$newsciname <- NULL
 trawldata$fishbase <- NULL
 trawldata$collection <- NULL
+trawldata$genus <- NULL
+trawldata$family <- NULL
+trawldata$order <- NULL
+trawldata$class <- NULL
+trawldata$subphylum <- NULL
+trawldata$phylum <- NULL
 names(trawldata)
 head(trawldata)
 
 #this script contains only trawl data from all four regions
 #write.csv(trawldata, file='C:/Users/StevensLy/Documents/Database/Data/trawldata.csv')
 trawldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/trawldata.csv",stringsAsFactors = F)
-View(trawldata)
 
-
-
-
+#next step is to merge the two databases together (trawldata and functionaldatabase)
+names(functionaldatabase)
+names(trawldata)
+trawldata$X <- NULL
+alldata <- merge(trawldata,functionaldatabase,by="species")
+#write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv')
+alldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
 
 
 
