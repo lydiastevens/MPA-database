@@ -206,6 +206,7 @@ head(totalgulf3)
 totalgulf3$X <- NULL
 names(totalgulf3)
 
+
 # #This is one way to change the column names
 # colnames(gulf)[16:18]<-c("GADUS MORHUA","MELANOGRAMMUS AEGLEFINUS","UROPHYCIS TENUIS")
 # colnames(gulf)[19:21]<-c("MERLUCCIUS BILINEARIS","POLLACHIUS VIRENS","SEBASTES SP.")
@@ -339,10 +340,10 @@ for (i in unique(allregions$region)[!is.na(unique(allregions$region))]){
     
   } #end of y 'year_final' loop
   
-} #end of i 'REGION' loop
+} #end of i 'region' loop
 
 freqinfo <- freqinfo[order(freqinfo$region,freqinfo$year,freqinfo$freq_stand),]
-View(freqinfo)
+
 
 ###Determining which species were captured more than 30% of the time in 
 ###trawl sets for each region
@@ -350,11 +351,11 @@ View(freqinfo)
 ##MARITIME##
 #combining region, date, lat, long into a tag
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
-                      allregions$longitude,allregions$latitude,sep="_")
-#filter dataset by anything after 2005 (last decade) and Maritime region
+                        allregions$longitude,allregions$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Gulf region
 subdata <- filter(allregions,year_final>2005,region=="MARITIME")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.75)
 #which species are found more than 30% of the time
 goodspecies_maritime <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_maritime <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
@@ -368,7 +369,7 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Newfoundland region
 subdata <- filter(allregions,year_final>2005,region=="NEWFOUNDLAND")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
 #which species are found more than 30% of the time
 goodspecies_newfoundland <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_newfoundland <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
@@ -381,7 +382,7 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Gulf region
 subdata <- filter(allregions,year_final>2005,region=="GULF")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
 #which species are found more than 30% of the time
 goodspecies_gulf <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_gulf <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
@@ -395,7 +396,7 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Quebec Region
 subdata <- filter(allregions,year_final>2005,region=="QUEBEC")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
 #which species are found more than 30% of the time
 goodspecies_quebec <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
@@ -495,9 +496,11 @@ names(functionaldatabase)
 names(trawldata)
 trawldata$X <- NULL
 alldata <- merge(trawldata,functionaldatabase,by="species")
+alldata[alldata==""] <- NA
+View(alldata)
 #write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv')
-alldata<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
-
+alldata_specieslevel<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
+head(alldata_specieslevel)
 
 
 
