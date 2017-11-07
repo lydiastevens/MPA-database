@@ -291,11 +291,13 @@ names(maritimenewfoundland)[3] <- paste("strat")
 names(maritimenewfoundland)[7] <- paste("region")
 names(maritimenewfoundland)[19] <- paste("depth")
 
+View(gulfquebec)
 
 allregions <- rbind.all.columns(gulfquebec,maritimenewfoundland)
 head(allregions)
 names(allregions)
 allregions$X <- NULL
+
 ##fixing mistakes
 allregions$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",allregions$species)
 allregions$species <- gsub("Raja fyllae","Rajella fyllae",allregions$species)
@@ -303,8 +305,8 @@ allregions$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",allregions
 allregions$genus <- gsub("Ulcina","Aspidophoroides",allregions$genus)
 allregions$newsciname <- gsub("ulcina olrikii","aspidophoroides olrikii",allregions$newsciname)
 allregions$class <- gsub("Teleostei","Actinopterygii",allregions$class)
-allregions$species <- gsub("Gadus ogac","Gadus macrocephalus",allregions$species)
-allregions$newsciname <- gsub("gadus ogac","gadus macrocephalus",allregions$newsciname)
+# allregions$species <- gsub("Gadus ogac","Gadus macrocephalus",allregions$species)
+# allregions$newsciname <- gsub("gadus ogac","gadus macrocephalus",allregions$newsciname)
 View(allregions)
 
 #creating a new database for functional traits only of unique species. I thought this was
@@ -343,9 +345,9 @@ for (i in unique(allregions$region)[!is.na(unique(allregions$region))]){
 } #end of i 'region' loop
 
 freqinfo <- freqinfo[order(freqinfo$region,freqinfo$year,freqinfo$freq_stand),]
+View(freqinfo)
 
-
-###Determining which species were captured more than 30% of the time in 
+###Determining which species were captured more than ___% of the time in 
 ###trawl sets for each region
 
 ##MARITIME##
@@ -355,8 +357,8 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Gulf region
 subdata <- filter(allregions,year_final>2005,region=="MARITIME")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.75)
-#which species are found more than 30% of the time
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than __% of the time
 goodspecies_maritime <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_maritime <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
@@ -369,12 +371,13 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Newfoundland region
 subdata <- filter(allregions,year_final>2005,region=="NEWFOUNDLAND")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
-#which species are found more than 30% of the time
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than __% of the time
 goodspecies_newfoundland <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_newfoundland <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
 goodspecies_newfoundland
+
 
 ##GULF##
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
@@ -382,8 +385,8 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Gulf region
 subdata <- filter(allregions,year_final>2005,region=="GULF")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
-#which species are found more than 30% of the time
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than __% of the time
 goodspecies_gulf <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_gulf <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
@@ -396,8 +399,8 @@ allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions
 #filter dataset by anything after 2005 (last decade) and Quebec Region
 subdata <- filter(allregions,year_final>2005,region=="QUEBEC")
 #what is 1% of the unique species
-Precent_1_stations <- floor(length(unique(subdata$tag))*0.50)
-#which species are found more than 30% of the time
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
+#which species are found more than __% of the time
 goodspecies_quebec <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
@@ -429,13 +432,14 @@ dflong$region <- NULL
 functionaldatabase <- dflong[!duplicated(dflong$species), ]
 ##read in functionaldatabase 
 functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv",stringsAsFactors = F)
+View(functionaldatabase)
 ##fixing mistakes
 functionaldatabase$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",functionaldatabase$species)
 functionaldatabase$species <- gsub("Raja fyllae","Rajella fyllae",functionaldatabase$species)
 functionaldatabase$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",functionaldatabase$species)
 functionaldatabase$genus <- gsub("Ulcina","Aspidophoroides",functionaldatabase$genus)
 functionaldatabase$class <- gsub("Teleostei","Actinopterygii",functionaldatabase$class)
-functionaldatabase$species <- gsub("Gadus ogac","Gadus macrocephalus",functionaldatabase$species)
+#functionaldatabase$species <- gsub("Gadus ogac","Gadus macrocephalus",functionaldatabase$species)
 #write.csv(functionaldatabase, file='C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv')
 #The functional database didn't have all of the information in it so I did some work in excel to complete
 #missing information. For example, most invertebrate species were excluded. 
@@ -497,10 +501,14 @@ names(trawldata)
 trawldata$X <- NULL
 alldata <- merge(trawldata,functionaldatabase,by="species")
 alldata[alldata==""] <- NA
-View(alldata)
+head(alldata)
+
+
+
 #write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv')
 alldata_specieslevel<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
 head(alldata_specieslevel)
-
-
-
+names(alldata_specieslevel)
+alldata_specieslevel$X.1 <- NULL
+alldata_specieslevel$X <- NULL
+View(alldata_specieslevel)
