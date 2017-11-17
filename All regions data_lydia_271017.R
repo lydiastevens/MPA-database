@@ -355,7 +355,7 @@ View(freqinfo)
 allregions$tag <- paste(allregions$region,paste(allregions$year_final,allregions$month_final,allregions$day_final,sep="-"),
                         allregions$longitude,allregions$latitude,sep="_")
 #filter dataset by anything after 2005 (last decade) and Gulf region
-subdata <- filter(allregions,year_final>2005,region=="MARITIME")
+subdata <- dplyr::filter(allregions,year_final>2005,region=="MARITIME")
 #what is 1% of the unique species
 Precent_1_stations <- floor(length(unique(subdata$tag))*0.01)
 #which species are found more than __% of the time
@@ -363,6 +363,18 @@ goodspecies_maritime <- names(which(table(subdata$species)>Precent_1_stations))
 pointdata_maritime <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
 
 goodspecies_maritime
+
+#sensitivity analysis
+
+x <- NULL
+for (i in seq(0.01,0.75,0.01)){
+  cutoff <- floor(length(unique(subdata$tag))*i)
+  x <- c(x,length(names(which(table(subdata$species)>cutoff))))
+}
+
+xplotdata <- data.frame(cutoff=seq(0.01,0.75,0.01),numspecies=x)
+
+ggplot2::ggplot(xplotdata,aes(x=cutoff,y=numspecies))+geom_point()+theme_bw()
 
 ##NEWFOUNDLAND##
 #combining region, date, lat, long into a tag
@@ -431,7 +443,7 @@ head(dflong)
 dflong$region <- NULL
 functionaldatabase <- dflong[!duplicated(dflong$species), ]
 ##read in functionaldatabase 
-functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv",stringsAsFactors = F)
+functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_171117.csv",stringsAsFactors = F)
 View(functionaldatabase)
 ##fixing mistakes
 functionaldatabase$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",functionaldatabase$species)
@@ -439,12 +451,25 @@ functionaldatabase$species <- gsub("Raja fyllae","Rajella fyllae",functionaldata
 functionaldatabase$species <- gsub("Ulcina olrikii","Aspidophoroides olrikii",functionaldatabase$species)
 functionaldatabase$genus <- gsub("Ulcina","Aspidophoroides",functionaldatabase$genus)
 functionaldatabase$class <- gsub("Teleostei","Actinopterygii",functionaldatabase$class)
+
 #functionaldatabase$species <- gsub("Gadus ogac","Gadus macrocephalus",functionaldatabase$species)
-#write.csv(functionaldatabase, file='C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_011117.csv')
 #The functional database didn't have all of the information in it so I did some work in excel to complete
 #missing information. For example, most invertebrate species were excluded. 
+#Re-writing the functionaldatabase will remove any of the work that was completed in excel!!!
 
+##Get mean length for all unique species in functionaldatabase
 
+alllength <- NULL
+for (i in unique(functionaldatabase$species)){
+  alllength <- rbind(alllength, data.frame(species=i, 
+  meanlength=mean(functionaldatabase[functionaldatabase$species==i,"length_cm"],na.rm=T)))
+}
+ 
+alllength
+##This becomes the small, medium and large groups for size
+alllength[alllength$meanlength<31,]
+alllength[alllength$meanlength[31:80],]
+alllength[alllength$meanlength>80,]
 
 ##make a dataset that just includes trawl information from all four regions
 trawldata <- allregions[, c(1:48)]
@@ -502,13 +527,15 @@ trawldata$X <- NULL
 alldata <- merge(trawldata,functionaldatabase,by="species")
 alldata[alldata==""] <- NA
 head(alldata)
-
-
+View(alldata)
 
 #write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv')
 alldata_specieslevel<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
 head(alldata_specieslevel)
 names(alldata_specieslevel)
-alldata_specieslevel$X.1 <- NULL
-alldata_specieslevel$X <- NULL
+
 View(alldata_specieslevel)
+alldata_specieslevel$X <- NULL
+
+alldata_specieslevel%>%filter(species=="Gadus morhua")%>%summarise(mnlen=mean(length_cm,na.rm=T))%>%ungroup()%>%data.frame
+
