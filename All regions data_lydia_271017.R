@@ -533,9 +533,37 @@ View(alldata)
 alldata_specieslevel<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
 head(alldata_specieslevel)
 names(alldata_specieslevel)
-
-View(alldata_specieslevel)
 alldata_specieslevel$X <- NULL
+View(alldata_specieslevel)
 
-alldata_specieslevel%>%filter(species=="Gadus morhua")%>%summarise(mnlen=mean(length_cm,na.rm=T))%>%ungroup()%>%data.frame
+##Starting to break down data and determine percentage of species captured in each region##
+##frequency of species captured in each region##
+##some observations from quebec may have to be removed because they are in the data
+##but recorded as absent
+frequency_of_species <- NULL #empty data
+for (i in unique(alldata_specieslevel$region)){
+  for (y in unique(alldata_specieslevel[alldata_specieslevel$region==i,"year"])){
+    
+    temp <- dplyr::filter(alldata_specieslevel,region==i,year==y)
+    
+    freq_obs <- as.data.frame(table(temp$species)/nrow(temp))
+    
+    colnames(freq_obs) <- c("Species","frequency")
+     
+     freq_obs$region=i
+     freq_obs$year=y
+     
+     freq_obs$freq_stand <- range01(freq_obs$frequency)
+     
+     frequency_of_species <- rbind(frequency_of_species,freq_obs)
+     
+     
+   } #end of y 'year_final' loop
+   
+ } #end of i 'REGION' loop
+ 
+frequency_of_species <- frequency_of_species[order(frequency_of_species$region,frequency_of_species$year),]
+View(frequency_of_species)
+
+
 
