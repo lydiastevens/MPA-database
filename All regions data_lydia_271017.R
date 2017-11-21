@@ -565,5 +565,22 @@ for (i in unique(alldata_specieslevel$region)){
 frequency_of_species <- frequency_of_species[order(frequency_of_species$region,frequency_of_species$year),]
 View(frequency_of_species)
 
+##frequency of species captured more than 1% of the time
+freq1 <- as.data.frame((table(alldata_specieslevel$species)/nrow(alldata_specieslevel))*100)
+
+##frequency of species captured in each region
+##is it the first one or the others?
+freqmaritime <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="MARITIME")/nrow(alldata_specieslevel[alldata_specieslevel$region=="MARITIME",])*100)
+freqnewfoundland <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="NEWFOUNDLAND")/nrow(alldata_specieslevel)*100)
+freqgulf <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="GULF")/nrow(alldata_specieslevel)*100)
+freqquebec <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="QUEBEC")/nrow(alldata_specieslevel)*100)
+
+
+
+plotfreq1<-ggplot(freq1)+
+geom_point(aes(x=Var1,y=Freq))+
+ylab("Frequency")+xlab("Species")+ggtitle("Frequency of species captured from all four regions")+
+coord_flip()+
+theme_bw();plotfreq1
 
 
