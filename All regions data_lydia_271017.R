@@ -562,25 +562,28 @@ for (i in unique(alldata_specieslevel$region)){
    
  } #end of i 'REGION' loop
  
-frequency_of_species <- frequency_of_species[order(frequency_of_species$region,frequency_of_species$year),]
+frequency_of_species <- frequency_of_species[order(frequency_of_species$year),]
 View(frequency_of_species)
 
-##frequency of species captured more than 1% of the time
-freq1 <- as.data.frame((table(alldata_specieslevel$species)/nrow(alldata_specieslevel))*100)
 
-##frequency of species captured in each region
-##is it the first one or the others?
-freqmaritime <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="MARITIME")/nrow(alldata_specieslevel[alldata_specieslevel$region=="MARITIME",])*100)
-freqnewfoundland <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="NEWFOUNDLAND")/nrow(alldata_specieslevel)*100)
-freqgulf <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="GULF")/nrow(alldata_specieslevel)*100)
-freqquebec <- as.data.frame(table(alldata_specieslevel$species, alldata_specieslevel$region=="QUEBEC")/nrow(alldata_specieslevel)*100)
-
-
-
-plotfreq1<-ggplot(freq1)+
-geom_point(aes(x=Var1,y=Freq))+
-ylab("Frequency")+xlab("Species")+ggtitle("Frequency of species captured from all four regions")+
+##frequency of species from all regions 
+##different coloured dots for each region would be cool
+plotfreq1<-ggplot(frequency_of_species)+
+geom_point(aes(x=Species,y=freq_stand))+
+ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of species captured from all four regions")+
 coord_flip()+
 theme_bw();plotfreq1
+
+
+##grouping species by temperature##
+##this info can be added to the functional trait table##
+meantemp_g <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
+meansurftemp_m <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(surf_temp,na.rm=T))%>%ungroup()%>%data.frame
+meanbottemp_nm <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
+
+
+##I took the mean bottom temperatures of species in maritime and newfoundland region and took the mean temperatures of those regions##
+##This have me one mean temperature for each region
+meantemp_species <- meanbottemp_nm%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
 
 
