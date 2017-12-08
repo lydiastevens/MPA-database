@@ -10,8 +10,8 @@ library(reshape)
 
 #load datasets from different regions for analysis
 maritimenewfoundland <- read.csv("C:/Users/StevensLy/Documents/Database/Data/newdata170317_Lydia3.csv",stringsAsFactors = F)
-quebec<-read.csv("C:/Users/StevensLy/Documents/Database/Data/Quebec Region RV DFO Survey_SLGO.csv",stringsAsFactors = F)
-gulf<-read.csv("C:/Users/StevensLy/Documents/Database/Data/Gulf Region RV DFO Survey.csv",stringsAsFactors = F)
+quebec<-read.csv("C:/Users/StevensLy/Documents/Database/Data/Archived/Quebec Region RV DFO Survey_SLGO.csv",stringsAsFactors = F)
+gulf<-read.csv("C:/Users/StevensLy/Documents/Database/Data/Archived/Gulf Region RV DFO Survey.csv",stringsAsFactors = F)
 
 #subset maritime and newfoundland data into separate regions
 maritime<-maritimenewfoundland[maritimenewfoundland$REGION=="MARITIME",]
@@ -48,6 +48,12 @@ unique(quebec$Latin.name) #103 unique species
 table(quebec$Latin.name)
 max(table(quebec$Latin.name)) #Gadus Morhua occurred the most frequently (2943 occasions)
 View(table(quebec$Latin.name))
+
+#######GULF#######
+min(gulf$year) #1971
+max(gulf$year) #2016
+
+
 
 #Cleaning Dates in quebec dataset
 Date<-as.POSIXct(quebec$Date, format="%Y-%m-%d", tz ="UTC")
@@ -443,8 +449,8 @@ head(dflong)
 dflong$region <- NULL
 functionaldatabase <- dflong[!duplicated(dflong$species), ]
 ##read in functionaldatabase 
-functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_171117.csv",stringsAsFactors = F)
-View(functionaldatabase)
+functionaldatabase<-read.csv("C:/Users/StevensLy/Documents/Database/Data/functionaldatabase_271117.csv",stringsAsFactors = F)
+head(functionaldatabase)
 ##fixing mistakes
 functionaldatabase$species <- gsub("Spirontocarus spinus","Spirontocaris spinus",functionaldatabase$species)
 functionaldatabase$species <- gsub("Raja fyllae","Rajella fyllae",functionaldatabase$species)
@@ -456,6 +462,18 @@ functionaldatabase$class <- gsub("Teleostei","Actinopterygii",functionaldatabase
 #The functional database didn't have all of the information in it so I did some work in excel to complete
 #missing information. For example, most invertebrate species were excluded. 
 #Re-writing the functionaldatabase will remove any of the work that was completed in excel!!!
+
+
+##Making a table with functional group info
+functional_groups <- data.frame(functionaldatabase$species, functionaldatabase$spec_code, functionaldatabase$resilience.category, 
+           functionaldatabase$salinity.tolerance,functionaldatabase$depth.category, functionaldatabase$size.category, 
+           functionaldatabase$habitat.category, functionaldatabase$trophic_level, functionaldatabase$fecundity.min, 
+           functionaldatabase$fecundity.max, functionaldatabase$feeding.guild.category)
+
+head(functional_groups)
+write.csv(functional_groups, file='C:/Users/StevensLy/Documents/Database/Data/functional_groups.csv')
+
+
 
 ##Get mean length for all unique species in functionaldatabase
 
@@ -529,22 +547,24 @@ alldata[alldata==""] <- NA
 head(alldata)
 View(alldata)
 
-#write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv')
-alldata_specieslevel<-read.csv("C:/Users/StevensLy/Documents/Database/Data/alldata_specieslevel.csv",stringsAsFactors = F)
-head(alldata_specieslevel)
-names(alldata_specieslevel)
-alldata_specieslevel$X <- NULL
-View(alldata_specieslevel)
+write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv')
+fourregions_merged<-read.csv("C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv",stringsAsFactors = F)
+head(fourregions_merged)
+names(fourregions_merged)
+fourregions_merged$X <- NULL
+View(fourregions_merged)
+
+
 
 ##Starting to break down data and determine percentage of species captured in each region##
 ##frequency of species captured in each region##
 ##some observations from quebec may have to be removed because they are in the data
 ##but recorded as absent
 frequency_of_species <- NULL #empty data
-for (i in unique(alldata_specieslevel$region)){
-  for (y in unique(alldata_specieslevel[alldata_specieslevel$region==i,"year"])){
+for (i in unique(fourregions_merged$region)){
+  for (y in unique(fourregions_merged[fourregions_merged$region==i,"year"])){
     
-    temp <- dplyr::filter(alldata_specieslevel,region==i,year==y)
+    temp <- dplyr::filter(fourregions_merged,region==i,year==y)
     
     freq_obs <- as.data.frame(table(temp$species)/nrow(temp))
     
@@ -577,13 +597,25 @@ theme_bw();plotfreq1
 
 ##grouping species by temperature##
 ##this info can be added to the functional trait table##
+
+##Mean temperature of gulf
 meantemp_g <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
-meansurftemp_m <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(surf_temp,na.rm=T))%>%ungroup()%>%data.frame
-meanbottemp_nm <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
+meantemp_speciesg <- meantemp_g%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
+
 
 
 ##I took the mean bottom temperatures of species in maritime and newfoundland region and took the mean temperatures of those regions##
-##This have me one mean temperature for each region
-meantemp_species <- meanbottemp_nm%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
+##This have me one mean temperature for each
+meanbottemp_nm <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
+meantemp_speciesnm <- meanbottemp_nm%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
 
 
+##plot temperatures for gulf region
+gulf_temperature <- meantemp_speciesg[!is.na(meantemp_speciesg$meantemp),]
+ggplot(gulf_temperature, aes(x=meantemp, y=species))+
+  geom_point()+theme_bw()
+
+##plot temperatures for maritime and newfoundland region
+mn_temperature <- meantemp_speciesnm[!is.na(meantemp_speciesnm$meantemp),]
+ggplot(mn_temperature, aes(x=meantemp, y=species))+
+  geom_point()+theme_bw()
