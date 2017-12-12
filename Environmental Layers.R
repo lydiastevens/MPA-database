@@ -18,11 +18,6 @@ require(dplyr)
 library(reshape)
 list(canada$NAME_1)
 
-??raster
-
-##I Tried reading in the following folder. It didn't work.
-tt<-raster("C:/Users/stevensly/Desktop/Bio ORACLE/Present.Surface.Dissolved.oxygen.Max.asc")
-
 #Loading datasets in sdmpredictors package package 
 datasets <- list_datasets(terrestrial = FALSE, marine = TRUE)
 
@@ -44,22 +39,32 @@ map3$region <-rep("Canada", nrow(coastmap3))
 #Load dissolved oxygen data (Dissolved oxygen concentration [DO])
 #Load Map with the lat/long extent
 #Lay dissolved oxygen data over map
-dissolved_oxygen <- load_layers(c("BO_dissox")) 
-dissolved_oxygen.crop <- crop(dissolved_oxygen, ca.provinces) 
+dissolved_oxygen <- load_layers(c("BO_dissox"))
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+dissolved_oxygen.crop <- crop(dissolved_oxygen, ne.atlantic.ext) 
 my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
 plot(dissolved_oxygen.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
 title(main = "Dissolved Oxygen")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+#################################################################
+
 
 
 ################################################################
 #Load dissolved pH data (measure of acidity in the ocean)
 #Load Map with the lat/long extent
 #Lay pH data over map
-pH <- load_layers(c("BO_ph")) 
-pH.crop <- crop(pH, ca.provinces) 
+pH <- load_layers(c("BO_ph"))
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+pH.crop <- crop(pH, ne.atlantic.ext) 
 my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
 plot(pH.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
 title(main = "pH")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+#################################################################
+
 
 
 #################################################################
@@ -67,30 +72,75 @@ title(main = "pH")
 #Load Map with the lat/long extent
 #Lay bathymetric slope data over map
 bathymetric_slope <- load_layers(c("MS_biogeo06_bathy_slope_5m")) 
-subsetb <- subset(bathymetric_slope[7,]>0.5)
-ne.atlantic.ext <- extent(-75, -50, 39, 55)
-bathymetric_slope.crop <- crop(subsetb, ne.atlantic.ext) 
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+bathymetric_slope.crop <- crop(bathymetric_slope, ne.atlantic.ext) 
 my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
 plot(bathymetric_slope.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
 title(main = "Bathymetric Slope")
-
-
-
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
 ###############################################################
 
 
-
+#################################################################
+#Load Mean Sea Surface Temperature (Sea surface temperature is the temperature of the water at the ocean surface. This parameter indicates the temperature of the topmost meter of the ocean water column)
+#Load Map with the lat/long extent
+#Lay Mean Sea Surface Temperature data over map
+surfacetemp_mean <- load_layers(c("BO_sstmean")) 
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+surfacetemp_mean.crop <- crop(surfacetemp_mean, ne.atlantic.ext) 
+my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
+plot(surfacetemp_mean.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
+title(main = "Mean Surface Temperature")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+###############################################################
  
 
+#################################################################
+#Load Salinity (Salinity indicates the dissolved salt content in the ocean)
+#Load Map with the lat/long extent
+#Lay Salinity data over map
+salinity <- load_layers(c("BO_salinity")) 
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+salinity.crop <- crop(salinity, ne.atlantic.ext) 
+my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
+plot(salinity.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
+title(main = "Salinity")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+###############################################################
 
 
+#################################################################
+#Load Mean Sea Surface Salinity (Measurements of sea surface salinity (SSS) were obtained from in situ oceanographic observations compiled by NOAA?s World Ocean Atlas 2009 (WOA09; Antonov et al. 2010))
+#Load Map with the lat/long extent
+#Lay Mean Sea Surface Salinity data over map
+seasurface_salinity <- load_layers(c("MS_biogeo08_sss_mean_5m")) 
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+seasurface_salinity.crop <- crop(seasurface_salinity, ne.atlantic.ext) 
+my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
+plot(seasurface_salinity.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
+title(main = "Mean Sea Surface Salinity")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+###############################################################
 
 
+#Load Sea surface temperature (coldest ice-free month) Data. 
+#Load Map with the lat/long extent
+#Lay Mean Sea Surface Salinity data over map
+seasurface_salinity <- load_layers(c("MS_biogeo08_sss_mean_5m")) 
+ne.atlantic.ext <- extent(-70.9, -47.3, 41.9, 58.6)
+seasurface_salinity.crop <- crop(seasurface_salinity, ne.atlantic.ext) 
+my.colors = colorRampPalette(c("#5E85B8","#EDF0C0","#C13127")) 
+plot(seasurface_salinity.crop,col=my.colors(1000),axes=FALSE, box=FALSE)
+title(main = "Mean Sea Surface Salinity")
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="white", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+map("worldHires", xlim=Long.lim, ylim=Lat.lim, col="black", fill=TRUE, resolution=0,interior = FALSE,lty=0,add=T)
+###############################################################
 
-
-
-
-
+MS_biogeo14_sst_min_5m
 
 
 
