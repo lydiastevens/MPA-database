@@ -593,10 +593,129 @@ View(frequency_of_species)
 ##frequency of species from all regions 
 ##different coloured dots for each region would be cool
 plotfreq1<-ggplot(frequency_of_species)+
-geom_point(aes(x=Species,y=freq_stand))+
+geom_point(aes(x=Species,y=freq_stand, colour=region))+
 ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of species captured from all four regions")+
 coord_flip()+
 theme_bw();plotfreq1
+
+
+##Mean Depth
+meandepth <- fourregions_merged%>%group_by(region, month)%>%summarise(meandepth=mean(depth,na.rm=T))%>%ungroup()%>%data.frame
+mindepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmin=mean(dmin,na.rm=T))%>%ungroup()%>%data.frame
+maxdepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmax=mean(dmax,na.rm=T))%>%ungroup()%>%data.frame
+
+##Excludes data points from Quebec because there is no depth information for that region
+meandepth_plot <- ggplot(data=meandepth, aes(month, meandepth)) +
+  geom_point(aes(colour=region))+
+  labs(x="Month", y="Mean Depth (m)")+
+  theme_bw()+
+  scale_x_discrete(limits=c(1:12), labels=c("January", "February", "March", "April", "May", "June", "July", "August", "September",
+                                            "October", "November", "December"))+
+  theme(axis.text.x = element_text(angle=20))
+  meandepth_plot
+
+##Species length
+meanlength <- fourregions_merged%>%group_by(species)%>%summarise(meanlength_cm=mean(length_cm,na.rm=T))%>%ungroup()%>%data.frame
+meanlength_plot <- ggplot(data=meanlength, aes(species,meanlength_cm)) +
+  geom_point(aes(colour=meanlength_cm))+
+  labs(x="Species", y="Mean Length (cm)")+
+  theme_bw()+
+  scale_x_discrete(expand=c(0,0))+
+  theme(axis.text.x = element_text(angle=90))
+meanlength_plot
+
+#################----Mapping----###################
+###################################################
+##Provinces within Canada Mapping##
+coast_map <- fortify(map("worldHires", fill=TRUE, plot=FALSE))
+provinces <- c("New Brunswick", "Nova Scotia", "Prince Edward Island", "Québec", "Newfoundland and Labrador", "Ontario")
+canada <- getData("GADM",country="CAN",level=1)
+ca.provinces <- canada[canada$NAME_1 %in% provinces,]
+coastmap2 <- fortify(canada)
+coastmap3<- fortify(ca.provinces)
+coastmap3$region <-rep("Canada", nrow(coastmap3))
+####################################################
+####################################################
+
+
+##All Captures Across Regions##
+latlong <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude)
+captures<- ggplot()
+captures <- captures + geom_map(data=coastmap3, map=coastmap3,
+                                  aes(x=long, y=lat, map_id=region),
+                                  fill="ivory2", color="black", size=1)
+captures <- captures + geom_map(data=data.frame(region="Canada"), map=coastmap3,
+                                  aes(map_id=region), fill="grey90", size=1)
+captures <- captures + xlim(-80, -45) + ylim(42, 58)
+## adjust these lat longs above to get the proper dimensions of the map
+captures <- captures + theme(panel.background = element_rect(fill = "#F3FFFF"))
+captures <- captures + theme(panel.grid.major = element_line(colour = "black", linetype = "dotted"))
+captures <- captures + ylab('Latitude')+ xlab('Longitude')
+captures <- captures + theme(axis.title.x = element_text(face="bold", colour="#000000", size=14))
+captures <- captures + theme(axis.title.y = element_text(face="bold", colour="#000000", size=14))
+captures <- captures + theme(axis.text.x = element_text(face="bold", colour="#000000", size=12))
+captures <- captures + theme(axis.text.y = element_text(face="bold", colour="#000000", size=12))
+captures <- captures + theme(panel.background = element_rect(colour = "black"))
+captures <- captures + theme(panel.border = element_rect(colour = "black", fill=NA))
+captures <- captures + geom_point(data = latlong, aes(x=fourregions_merged.longitude, y=fourregions_merged.latitude, drop=FALSE), size = 1.0, shape =21, fill= "red")
+## in here you can adjust the size of the point, the colour, the shape etc. 
+captures
+
+##Map species distribution. Can put whatever species or year you want to map in##
+speciesdis <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude, fourregions_merged$year, fourregions_merged$species, fourregions_merged$region)
+speciesdis2 <- speciesdis[speciesdis$fourregions_merged.year>2005 & speciesdis$fourregions_merged.species=="Gadus morhua",]
+
+
+toppecies<- ggplot()
+toppecies <- toppecies + geom_map(data=coastmap3, map=coastmap3,
+                                aes(x=long, y=lat, map_id=region),
+                                fill="ivory2", color="black", size=1)
+toppecies <- toppecies + geom_map(data=data.frame(region="Canada"), map=coastmap3,
+                                aes(map_id=region), fill="grey90", size=1)
+toppecies <- toppecies + xlim(-80, -45) + ylim(42, 58)
+## adjust these lat longs above to get the proper dimensions of the map
+toppecies <- toppecies + theme(panel.background = element_rect(fill = "#F3FFFF"))
+toppecies <- toppecies + theme(panel.grid.major = element_line(colour = "black", linetype = "dotted"))
+toppecies <- toppecies + ylab('Latitude')+ xlab('Longitude')
+toppecies <- toppecies + theme(axis.title.x = element_text(face="bold", colour="#000000", size=14))
+toppecies <- toppecies + theme(axis.title.y = element_text(face="bold", colour="#000000", size=14))
+toppecies <- toppecies + theme(axis.text.x = element_text(face="bold", colour="#000000", size=12))
+toppecies <- toppecies + theme(axis.text.y = element_text(face="bold", colour="#000000", size=12))
+toppecies <- toppecies + theme(panel.background = element_rect(colour = "black"))
+toppecies <- toppecies + theme(panel.border = element_rect(colour = "black", fill=NA))
+toppecies <- toppecies + geom_point(data = speciesdis2, aes(x=fourregions_merged.longitude, y=fourregions_merged.latitude, 
+                                                            colour=factor(fourregions_merged.region), drop=FALSE), size = 1.0, shape =21)+
+                                                            labs(colour="Region")
+## in here you can adjust the size of the point, the colour, the shape etc. 
+toppecies
+
+
+
+
+##Captures by Region##
+latlongregion <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude, fourregions_merged$region)
+captures.regions<- ggplot()
+captures.regions <- captures.regions + geom_map(data=coastmap3, map=coastmap3,
+                                aes(x=long, y=lat, map_id=region),
+                                fill="ivory2", color="black", size=1)
+captures.regions <- captures.regions + geom_map(data=data.frame(region="Canada"), map=coastmap3,
+                                aes(map_id=region), fill="grey90", size=1)
+captures.regions <- captures.regions + xlim(-80, -45) + ylim(42, 58)
+## adjust these lat longs above to get the proper dimensions of the map
+captures.regions <- captures.regions + theme(panel.background = element_rect(fill = "#F3FFFF"))
+captures.regions <- captures.regions + theme(panel.grid.major = element_line(colour = "black", linetype = "dotted"))
+captures.regions <- captures.regions + ylab('Latitude')+ xlab('Longitude')
+captures.regions <- captures.regions + theme(axis.title.x = element_text(face="bold", colour="#000000", size=14))
+captures.regions <- captures.regions + theme(axis.title.y = element_text(face="bold", colour="#000000", size=14))
+captures.regions <- captures.regions + theme(axis.text.x = element_text(face="bold", colour="#000000", size=12))
+captures.regions <- captures.regions + theme(axis.text.y = element_text(face="bold", colour="#000000", size=12))
+captures.regions <- captures.regions + theme(panel.background = element_rect(colour = "black"))
+captures.regions <- captures.regions + theme(panel.border = element_rect(colour = "black", fill=NA))
+captures.regions <- captures.regions + geom_point(data =latlongregion, aes(x=fourregions_merged.longitude, y=fourregions_merged.latitude, 
+                                                           colour=factor(fourregions_merged.region), drop=FALSE), size = 1.0, shape =21)+
+                                                          labs(colour="Region")
+## in here you can adjust the size of the point, the colour, the shape etc. 
+captures.regions
 
 
 ##grouping species by temperature##
@@ -606,9 +725,7 @@ theme_bw();plotfreq1
 meantemp_g <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
 meantemp_speciesg <- meantemp_g%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
 
-
-
-##I took the mean bottom temperatures of species in maritime and newfoundland region and took the mean temperatures of those regions##
+##I took the mean bottom temperatures of each capture in maritime and newfoundland region and then took the mean temperatures of those species##
 ##This have me one mean temperature for each
 meanbottemp_nm <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
 meantemp_speciesnm <- meanbottemp_nm%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
