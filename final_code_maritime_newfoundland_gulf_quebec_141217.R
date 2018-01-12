@@ -547,7 +547,7 @@ alldata[alldata==""] <- NA
 head(alldata)
 View(alldata)
 
-write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv')
+#write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv')
 fourregions_merged<-read.csv("C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv",stringsAsFactors = F)
 head(fourregions_merged)
 names(fourregions_merged)
@@ -560,22 +560,31 @@ min(fourregions_merged$latitude)
 max(fourregions_merged$latitude)
 min(fourregions_merged$longitude)
 max(fourregions_merged$longitude)
+
+#Set frequencies to have a range (1-0). Where the species with the highest capture percentage is 1 and the lowest is 0
+# #This can level out if gear wasn't working and only one trawl survey was done catching a lot of fish versus many 
+# #trawl surveys catching fewer fish (I think?)
+
+range01 <- function(x){(x-min(x))/(max(x)-min(x))}
+
 ##Starting to break down data and determine percentage of species captured in each region##
 ##frequency of species captured in each region##
 ##some observations from quebec may have to be removed because they are in the data
 ##but recorded as absent
 frequency_of_species <- NULL #empty data
 for (i in unique(fourregions_merged$region)){
-  for (y in unique(fourregions_merged[fourregions_merged$region==i,"year"])){
+  for (y in unique(fourregions_merged[fourregions_merged$region==i,"year"]))
+       for(x in unique(fourregions_merged$invertebrate)){
     
-    temp <- dplyr::filter(fourregions_merged,region==i,year==y)
+    temp <- dplyr::filter(fourregions_merged,region==i,year==y, invertebrate==x)
     
     freq_obs <- as.data.frame(table(temp$species)/nrow(temp))
     
-    colnames(freq_obs) <- c("Species","frequency")
+    colnames(freq_obs) <- c("species","frequency")
      
      freq_obs$region=i
      freq_obs$year=y
+     freq_obs$invertebrate=x
      
      freq_obs$freq_stand <- range01(freq_obs$frequency)
      
@@ -587,17 +596,65 @@ for (i in unique(fourregions_merged$region)){
  } #end of i 'REGION' loop
  
 frequency_of_species <- frequency_of_species[order(frequency_of_species$year),]
-View(frequency_of_species)
 
 
-##frequency of species from all regions 
-##different coloured dots for each region would be cool
+##Once you determine the percentage of species you want, these plots will have fewer species.
+##frequency of species from all regions## 
 plotfreq1<-ggplot(frequency_of_species)+
-geom_point(aes(x=Species,y=freq_stand, colour=region))+
+geom_point(aes(x=species,y=freq_stand, colour=factor(region)))+
 ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of species captured from all four regions")+
 coord_flip()+
 theme_bw();plotfreq1
 
+
+##frequency of Vertebrate species from Maritime region##
+frequency_of_species_mv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="MARITIME", invertebrate=="0")%>%ungroup()%>%data.frame
+plotfreqm<-ggplot(frequency_of_species_mv)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Maritime vertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqm
+
+##frequency of Invertebrate species from Maritime region##
+frequency_of_species_mi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="MARITIME", invertebrate=="1")%>%ungroup()%>%data.frame
+plotfreqmi<-ggplot(frequency_of_species_mi)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Maritime invertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqmi
+
+##frequency of Vertebrate species from Gulf region##
+frequency_of_species_gv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="GULF", invertebrate=="0")%>%ungroup()%>%data.frame
+plotfreqg <- ggplot(frequency_of_species_gv)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Gulf vertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqg
+
+##frequency of Invertebrate species from Gulf region##
+frequency_of_species_gi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="GULF", invertebrate=="1")%>%ungroup()%>%data.frame
+plotfreqgi<-ggplot(frequency_of_species_gi)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Gulf invertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqgi
+
+
+##frequency of Vertebrate species from Quebec region##
+frequency_of_species_qv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="QUEBEC", invertebrate=="0")%>%ungroup()%>%data.frame
+plotfreqq <- ggplot(frequency_of_species_qv)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Quebec vertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqq
+
+##frequency of Invertebrate species from Quebec region##
+frequency_of_species_qi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="QUEBEC", invertebrate=="1")%>%ungroup()%>%data.frame
+plotfreqqi<-ggplot(frequency_of_species_qi)+
+  geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
+  ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Quebec invertebrates since 2005")+
+  coord_flip()+
+  theme_bw();plotfreqqi
 
 ##Mean Depth
 meandepth <- fourregions_merged%>%group_by(region, month)%>%summarise(meandepth=mean(depth,na.rm=T))%>%ungroup()%>%data.frame
@@ -663,7 +720,7 @@ captures
 
 ##Map species distribution. Can put whatever species or year you want to map in##
 speciesdis <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude, fourregions_merged$year, fourregions_merged$species, fourregions_merged$region)
-speciesdis2 <- speciesdis[speciesdis$fourregions_merged.year>2005 & speciesdis$fourregions_merged.species=="Gadus morhua",]
+speciesdis2 <- speciesdis[speciesdis$fourregions_merged.year>2005 & speciesdis$fourregions_merged.species=="Gadus ogac",]
 
 
 toppecies<- ggplot()
@@ -688,9 +745,6 @@ toppecies <- toppecies + geom_point(data = speciesdis2, aes(x=fourregions_merged
                                                             labs(colour="Region")
 ## in here you can adjust the size of the point, the colour, the shape etc. 
 toppecies
-
-
-
 
 ##Captures by Region##
 latlongregion <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude, fourregions_merged$region)
@@ -717,26 +771,77 @@ captures.regions <- captures.regions + geom_point(data =latlongregion, aes(x=fou
 ## in here you can adjust the size of the point, the colour, the shape etc. 
 captures.regions
 
+##############List invertebrates and vertebrates#################
+invertebrates <- fourregions_merged[fourregions_merged$invertebrate==1,]
+vertebrates <- fourregions_merged[fourregions_merged$invertebrate==0,]
 
-##grouping species by temperature##
-##this info can be added to the functional trait table##
-
-##Mean temperature of gulf
-meantemp_g <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
-meantemp_speciesg <- meantemp_g%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
-
-##I took the mean bottom temperatures of each capture in maritime and newfoundland region and then took the mean temperatures of those species##
-##This have me one mean temperature for each
-meanbottemp_nm <- trawldata%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
-meantemp_speciesnm <- meanbottemp_nm%>%group_by(species)%>%summarise(meantemp=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
+unique(invertebrates$species) ##54 Invertebrates
+unique(vertebrates$species) ##129 Vertebrates
 
 
-##plot temperatures for gulf region
-gulf_temperature <- meantemp_speciesg[!is.na(meantemp_speciesg$meantemp),]
-ggplot(gulf_temperature, aes(x=meantemp, y=species))+
+###############----Temperature----###########################
+#############################################################
+##Temperature column is only for Gulf Region
+##The surf_temp & bott_temp column is only for Maritime Region
+##The bott_temp column is only for Newfoundland Region
+##Quebec has no temperature data
+
+
+##Mean temperature
+meantemp <- fourregions_merged%>%group_by(species, region, year)%>%summarise(meantemp=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
+##plot temperatures
+temperature <- meantemp[!is.nan(meantemp$meantemp),]
+ggplot(temperature, aes(x=meantemp, y=species))+
   geom_point()+theme_bw()
 
-##plot temperatures for maritime and newfoundland region
-mn_temperature <- meantemp_speciesnm[!is.na(meantemp_speciesnm$meantemp),]
-ggplot(mn_temperature, aes(x=meantemp, y=species))+
+##I took the mean bottom temperatures of each capture and then took the mean temperatures of those species##
+##This gave me one mean temperature for each
+meanbottemp <- fourregions_merged%>%group_by(species, region, year)%>%summarise(meantemp=mean(bott_temp,na.rm=T))%>%ungroup()%>%data.frame
+meantemp_species <- meanbottemp%>%group_by(species)%>%summarise(meantemp_species=mean(meantemp,na.rm=T))%>%ungroup()%>%data.frame
+
+##plot temperatures
+meanbottspecies <- meantemp_species[!is.na(meantemp_species$meantemp_species),]
+ggplot(meantemp_species, aes(x=meantemp_species, y=species))+
   geom_point()+theme_bw()
+
+
+##Vertebrate Temperature##
+meantempvert <- vertebrates%>%group_by(species, region, year)%>%summarise(meantempvertebrates=mean(temperature,na.rm=T))%>%ungroup()%>%data.frame
+meantempvert2 <- meantempinvert[!is.nan(meantempinvert$meantempvertebrates),]
+meantempvert3<- meantempinvert2%>%group_by(species)%>%summarise(meantemp_species=mean(meantempvertebrates,na.rm=T))%>%ungroup()%>%data.frame
+
+tt <- ggplot(meantempvert3, aes(x=meantemp_species, y=species))+
+  geom_point()+theme_bw()
+
+
+library(vegan)
+##########----Non-metric multidimensional scaling----#########
+
+
+##Create a Matrix##
+mymatrix <- dcast(fourregions_merged, region~species)
+metaMDS(mymatrix, k=2, trymax = 100)
+
+
+
+
+set.seed(2)
+community_matrix=matrix(
+  mymatrix(1:193,4,replace=T),nrow=10,
+  dimnames=list(paste("community",1:10,sep=""),paste("sp",1:30,sep="")))
+
+example_NMDS=metaMDS(mymatrix,k=2)
+
+example_NMDS=metaMDS(mymatrix,k=2,trymax=100)
+stressplot(example_NMDS)
+plot(example_NMDS)
+
+ordiplot(example_NMDS,type="n")
+orditorp(example_NMDS,display="species",col="red",air=0.01)
+orditorp(example_NMDS,display="sites",cex=1.25,air=0.01)
+
+
+
+
+
+
