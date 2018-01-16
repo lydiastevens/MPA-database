@@ -7,6 +7,21 @@ library(ggplot2)
 library(gridExtra)
 library(reshape2)
 library(reshape)
+require(maps)
+require(mapdata)
+require(mapproj)
+require(maptools)
+require(plotrix)
+require(gdistance)
+require(rgdal)
+require(sp)
+require(marmap)
+require(ggrepel)
+require(tmap)
+require(tmaptools)
+
+
+
 
 #load datasets from different regions for analysis
 maritimenewfoundland <- read.csv("C:/Users/StevensLy/Documents/Database/Data/newdata170317_Lydia3.csv",stringsAsFactors = F)
@@ -547,12 +562,16 @@ alldata[alldata==""] <- NA
 head(alldata)
 View(alldata)
 
+
+
+####################################################################################################################
+#####################################----FOUR REGIONS MERGED----#####################################################
+####################################################################################################################
+
 #write.csv(alldata, file='C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv')
 fourregions_merged<-read.csv("C:/Users/StevensLy/Documents/Database/Data/fourregions_merged.csv",stringsAsFactors = F)
 head(fourregions_merged)
-names(fourregions_merged)
 fourregions_merged$X <- NULL
-View(fourregions_merged)
 
 ###Range of lat and long for plotting coordinates##
 names(fourregions_merged)
@@ -598,16 +617,76 @@ for (i in unique(fourregions_merged$region)){
 frequency_of_species <- frequency_of_species[order(frequency_of_species$year),]
 
 
+#####----MARITIME: Percentage of Species----####
+####Change year and percentage as needed####
+fourregions_merged$tag <- paste(fourregions_merged$region,paste(fourregions_merged$year,fourregions_merged$month,fourregions_merged$day,sep="-"),
+                                fourregions_merged$longitude,fourregions_merged$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Gulf region
+subdata <- dplyr::filter(fourregions_merged,year>2005,region=="MARITIME")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.5)
+#which species are found more than __% of the time
+goodspecies_maritime <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata_maritime <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_maritime
+
+
+#####----NEWFOUNDLAND: Percentage of Species----####
+####Change year and percentage as needed####
+fourregions_merged$tag <- paste(fourregions_merged$region,paste(fourregions_merged$year,fourregions_merged$month,fourregions_merged$day,sep="-"),
+                                fourregions_merged$longitude,fourregions_merged$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Gulf region
+subdata <- dplyr::filter(fourregions_merged,year>2005,region=="NEWFOUNDLAND")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.5)
+#which species are found more than __% of the time
+goodspecies_newfoundland <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata_newfoundland <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_newfoundland
+
+
+#####----GULF: Percentage of Species----####
+####Change year and percentage as needed####
+fourregions_merged$tag <- paste(fourregions_merged$region,paste(fourregions_merged$year,fourregions_merged$month,fourregions_merged$day,sep="-"),
+                                fourregions_merged$longitude,fourregions_merged$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Gulf region
+subdata <- dplyr::filter(fourregions_merged,year>2005,region=="GULF")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.5)
+#which species are found more than __% of the time
+goodspecies_gulf <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata_gulf <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_gulf
+
+
+#####----QUEBEC: Percentage of Species----####
+####Change year and percentage as needed####
+fourregions_merged$tag <- paste(fourregions_merged$region,paste(fourregions_merged$year,fourregions_merged$month,fourregions_merged$day,sep="-"),
+                                fourregions_merged$longitude,fourregions_merged$latitude,sep="_")
+#filter dataset by anything after 2005 (last decade) and Gulf region
+subdata <- dplyr::filter(fourregions_merged,year>2005,region=="QUEBEC")
+#what is 1% of the unique species
+Precent_1_stations <- floor(length(unique(subdata$tag))*0.5)
+#which species are found more than __% of the time
+goodspecies_quebec <- names(which(table(subdata$species)>Precent_1_stations))
+pointdata_quebec <- subdata[!subdata$species%in%names(which(table(subdata$species)>Precent_1_stations)),c("longitude","latitude","year_final")]
+
+goodspecies_quebec
+
+
+######################################################
+####----Frequency of species from all regions----####
 ##Once you determine the percentage of species you want, these plots will have fewer species.
-##frequency of species from all regions## 
 plotfreq1<-ggplot(frequency_of_species)+
 geom_point(aes(x=species,y=freq_stand, colour=factor(region)))+
 ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of species captured from all four regions")+
 coord_flip()+
 theme_bw();plotfreq1
 
-
-##frequency of Vertebrate species from Maritime region##
+####----Frequency of Vertebrate species from Maritime region----####
 frequency_of_species_mv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="MARITIME", invertebrate=="0")%>%ungroup()%>%data.frame
 plotfreqm<-ggplot(frequency_of_species_mv)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
@@ -615,7 +694,7 @@ plotfreqm<-ggplot(frequency_of_species_mv)+
   coord_flip()+
   theme_bw();plotfreqm
 
-##frequency of Invertebrate species from Maritime region##
+####----Frequency of Invertebrate species from Maritime region----####
 frequency_of_species_mi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="MARITIME", invertebrate=="1")%>%ungroup()%>%data.frame
 plotfreqmi<-ggplot(frequency_of_species_mi)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
@@ -623,7 +702,7 @@ plotfreqmi<-ggplot(frequency_of_species_mi)+
   coord_flip()+
   theme_bw();plotfreqmi
 
-##frequency of Vertebrate species from Gulf region##
+####----Frequency of Vertebrate species from Gulf region----####
 frequency_of_species_gv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="GULF", invertebrate=="0")%>%ungroup()%>%data.frame
 plotfreqg <- ggplot(frequency_of_species_gv)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
@@ -631,7 +710,7 @@ plotfreqg <- ggplot(frequency_of_species_gv)+
   coord_flip()+
   theme_bw();plotfreqg
 
-##frequency of Invertebrate species from Gulf region##
+####----Frequency of Invertebrate species from Gulf region----####
 frequency_of_species_gi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="GULF", invertebrate=="1")%>%ungroup()%>%data.frame
 plotfreqgi<-ggplot(frequency_of_species_gi)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
@@ -639,8 +718,7 @@ plotfreqgi<-ggplot(frequency_of_species_gi)+
   coord_flip()+
   theme_bw();plotfreqgi
 
-
-##frequency of Vertebrate species from Quebec region##
+####----Frequency of Vertebrate species from Quebec region----####
 frequency_of_species_qv <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="QUEBEC", invertebrate=="0")%>%ungroup()%>%data.frame
 plotfreqq <- ggplot(frequency_of_species_qv)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
@@ -648,42 +726,20 @@ plotfreqq <- ggplot(frequency_of_species_qv)+
   coord_flip()+
   theme_bw();plotfreqq
 
-##frequency of Invertebrate species from Quebec region##
+####----Frequency of Invertebrate species from Quebec region----####
 frequency_of_species_qi <- frequency_of_species%>%group_by(species, region, year, freq_stand)%>%filter(year>2005, region=="QUEBEC", invertebrate=="1")%>%ungroup()%>%data.frame
 plotfreqqi<-ggplot(frequency_of_species_qi)+
   geom_point(aes(x=species,y=freq_stand, colour=factor(year)))+labs(colour="Year")+
   ylab("Standardized Frequency")+xlab("Species")+ggtitle("Standardized frequency of Quebec invertebrates since 2005")+
   coord_flip()+
   theme_bw();plotfreqqi
+#################################################################
 
-##Mean Depth
-meandepth <- fourregions_merged%>%group_by(region, month)%>%summarise(meandepth=mean(depth,na.rm=T))%>%ungroup()%>%data.frame
-mindepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmin=mean(dmin,na.rm=T))%>%ungroup()%>%data.frame
-maxdepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmax=mean(dmax,na.rm=T))%>%ungroup()%>%data.frame
 
-##Excludes data points from Quebec because there is no depth information for that region
-meandepth_plot <- ggplot(data=meandepth, aes(month, meandepth)) +
-  geom_point(aes(colour=region))+
-  labs(x="Month", y="Mean Depth (m)")+
-  theme_bw()+
-  scale_x_discrete(limits=c(1:12), labels=c("January", "February", "March", "April", "May", "June", "July", "August", "September",
-                                            "October", "November", "December"))+
-  theme(axis.text.x = element_text(angle=20))
-  meandepth_plot
-
-##Species length
-meanlength <- fourregions_merged%>%group_by(species)%>%summarise(meanlength_cm=mean(length_cm,na.rm=T))%>%ungroup()%>%data.frame
-meanlength_plot <- ggplot(data=meanlength, aes(species,meanlength_cm)) +
-  geom_point(aes(colour=meanlength_cm))+
-  labs(x="Species", y="Mean Length (cm)")+
-  theme_bw()+
-  scale_x_discrete(expand=c(0,0))+
-  theme(axis.text.x = element_text(angle=90))
-meanlength_plot
 
 #################----Mapping----###################
 ###################################################
-##Provinces within Canada Mapping##
+########--Provinces within Canada Mapping--########
 coast_map <- fortify(map("worldHires", fill=TRUE, plot=FALSE))
 provinces <- c("New Brunswick", "Nova Scotia", "Prince Edward Island", "Québec", "Newfoundland and Labrador", "Ontario")
 canada <- getData("GADM",country="CAN",level=1)
@@ -720,9 +776,7 @@ captures
 
 ##Map species distribution. Can put whatever species or year you want to map in##
 speciesdis <- data.frame(fourregions_merged$latitude, fourregions_merged$longitude, fourregions_merged$year, fourregions_merged$species, fourregions_merged$region)
-speciesdis2 <- speciesdis[speciesdis$fourregions_merged.year>2005 & speciesdis$fourregions_merged.species=="Gadus ogac",]
-
-
+speciesdis2 <- speciesdis[speciesdis$fourregions_merged.year>2005 & speciesdis$fourregions_merged.species=="Clupea harengus",]
 toppecies<- ggplot()
 toppecies <- toppecies + geom_map(data=coastmap3, map=coastmap3,
                                 aes(x=long, y=lat, map_id=region),
@@ -742,7 +796,8 @@ toppecies <- toppecies + theme(panel.background = element_rect(colour = "black")
 toppecies <- toppecies + theme(panel.border = element_rect(colour = "black", fill=NA))
 toppecies <- toppecies + geom_point(data = speciesdis2, aes(x=fourregions_merged.longitude, y=fourregions_merged.latitude, 
                                                             colour=factor(fourregions_merged.region), drop=FALSE), size = 1.0, shape =21)+
-                                                            labs(colour="Region")
+                                                            labs(colour="Region")+ggtitle("Clupea harengus Observations")+
+                                                            facet_wrap(~fourregions_merged.year)
 ## in here you can adjust the size of the point, the colour, the shape etc. 
 toppecies
 
@@ -771,10 +826,40 @@ captures.regions <- captures.regions + geom_point(data =latlongregion, aes(x=fou
 ## in here you can adjust the size of the point, the colour, the shape etc. 
 captures.regions
 
+
+
+
+##Mean Depth##
+meandepth <- fourregions_merged%>%group_by(region, month)%>%summarise(meandepth=mean(depth,na.rm=T))%>%ungroup()%>%data.frame
+mindepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmin=mean(dmin,na.rm=T))%>%ungroup()%>%data.frame
+maxdepth <- fourregions_merged%>%group_by(region, month)%>%summarise(dmax=mean(dmax,na.rm=T))%>%ungroup()%>%data.frame
+
+##Excludes data points from Quebec because there is no depth information for that region##
+meandepth_plot <- ggplot(data=meandepth, aes(month, meandepth)) +
+  geom_point(aes(colour=region))+
+  labs(x="Month", y="Mean Depth (m)")+
+  theme_bw()+
+  scale_x_discrete(limits=c(1:12), labels=c("January", "February", "March", "April", "May", "June", "July", "August", "September",
+                                            "October", "November", "December"))+
+  theme(axis.text.x = element_text(angle=20))
+meandepth_plot
+
+##Species length##
+meanlength <- fourregions_merged%>%group_by(species)%>%summarise(meanlength_cm=mean(length_cm,na.rm=T))%>%ungroup()%>%data.frame
+meanlength_plot <- ggplot(data=meanlength, aes(species,meanlength_cm)) +
+  geom_point(aes(colour=meanlength_cm))+
+  labs(x="Species", y="Mean Length (cm)")+
+  theme_bw()+
+  scale_x_discrete(expand=c(0,0))+
+  theme(axis.text.x = element_text(angle=90))
+meanlength_plot
+
+
+
+
 ##############List invertebrates and vertebrates#################
 invertebrates <- fourregions_merged[fourregions_merged$invertebrate==1,]
 vertebrates <- fourregions_merged[fourregions_merged$invertebrate==0,]
-
 unique(invertebrates$species) ##54 Invertebrates
 unique(vertebrates$species) ##129 Vertebrates
 
@@ -814,31 +899,16 @@ tt <- ggplot(meantempvert3, aes(x=meantemp_species, y=species))+
   geom_point()+theme_bw()
 
 
-library(vegan)
-##########----Non-metric multidimensional scaling----#########
+#############################################
+####Tables of species by year within region###
+#############################################
+newfoundlandcount <- table(fourregions_merged$species, fourregions_merged$year, fourregions_merged$region=="NEWFOUNDLAND")
+maritimecount <- table(fourregions_merged$species, fourregions_merged$year, fourregions_merged$region=="MARITIME")
+gulfcount <- table(fourregions_merged$species, fourregions_merged$year, fourregions_merged$region=="GULF")
+quebeccount <- table(fourregions_merged$species, fourregions_merged$year, fourregions_merged$region=="QUEBEC")
 
 
-##Create a Matrix##
-mymatrix <- dcast(fourregions_merged, region~species)
-metaMDS(mymatrix, k=2, trymax = 100)
 
-
-
-
-set.seed(2)
-community_matrix=matrix(
-  mymatrix(1:193,4,replace=T),nrow=10,
-  dimnames=list(paste("community",1:10,sep=""),paste("sp",1:30,sep="")))
-
-example_NMDS=metaMDS(mymatrix,k=2)
-
-example_NMDS=metaMDS(mymatrix,k=2,trymax=100)
-stressplot(example_NMDS)
-plot(example_NMDS)
-
-ordiplot(example_NMDS,type="n")
-orditorp(example_NMDS,display="species",col="red",air=0.01)
-orditorp(example_NMDS,display="sites",cex=1.25,air=0.01)
 
 
 
